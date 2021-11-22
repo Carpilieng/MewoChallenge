@@ -120,20 +120,26 @@ def threshold_decision(input, v_threshold):
 
 #threshold_decision = np.vectorize(lambda t : (lambda x : 0 if x < t[i] else 1 for i in range(t.shape[0])))
 
-# decision_mat = threshold_decision(x_test[:,1:], variable_threshold(x_train, y_train))
+decision_mat = threshold_decision(x_test[:,1:], variable_threshold(x_train, y_train))
 # x_test[:,1:249] = decision_mat[:,:]
 
-decision_mat = threshold_decision(x_validation, variable_threshold(x_train, y_train))
-accuracy = accuracy_score(decision_mat, y_validation, normalize=False)
+print(decision_mat)
+
+# decision_mat = threshold_decision(x_test[0:, 1:], variable_threshold(x_train, y_train))
+# accuracy = accuracy_score(decision_mat, y_validation, normalize=False)
 
 # FOUTRE DANS LE CSVVVVV
 
-df_y_train.data[:decision_mat.shape[0],1:249] = decision_mat
+print(df_x_test.head())
 
-# df_x_test.drop(:,249:)
-# df_x_test.Data[:,1:249] = decision_mat
+df_x_test = df_x_test.iloc[0:,:249]
 
+df_x_test = df_x_test.astype(dtype='int32')
+df_x_test.iloc[0:, 1:] = decision_mat
+print(df_x_test.dtypes)
 
-print(f"Accuracy : {accuracy}")
+print(df_x_test.head())
 
-numpy.savetxt("y_test.csv", x, delimiter=',')
+df_x_test.to_csv("y_test.csv", index=False)
+
+# print(f"Accuracy : {accuracy}")
