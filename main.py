@@ -19,7 +19,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.utils import to_categorical
 
-'''
+
 def plot_loss_acc(history):
     """Plot training and (optionally) validation loss and accuracy"""
 
@@ -56,7 +56,7 @@ def plot_loss_acc(history):
         title += ', Validation accuracy: {:.2f}%'.format(final_val_acc * 100)
     plt.title(title)
     plt.legend()
-'''
+
 
 csv_x_train_url = "train_X.csv"
 csv_y_train_url = "train_Y.csv"
@@ -64,22 +64,25 @@ csv_x_test_url = "test_X.csv"
 
 df_x_train = pd.read_csv(csv_x_train_url).drop("ChallengeID", axis=1)
 df_y_train = pd.read_csv(csv_y_train_url).drop("ChallengeID", axis=1)
-df_x_test = pd.read_csv(csv_x_test_url)
+
+#df_x_test = pd.read_csv(csv_x_test_url)
+df_x_test = pd.read_csv(csv_x_test_url).drop("ChallengeID", axis=1)
 
 x = df_x_train.to_numpy()
 y = df_y_train.to_numpy()
 x_test = df_x_test.to_numpy()
 
-x_train, x_validation, y_train, y_validation = train_test_split(x, y, test_size=0.25)
+x_train, x_validation, y_train, y_validation = train_test_split(x, y, test_size=0.20)
 
 print(f"x_train: {x_train.shape}")
 print(f"y_train: {y_train.shape}")
 
-'''
+
 scaler = StandardScaler()
 scaler.fit(x_train)
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
+x_validation = scaler.transform(x_validation)
 
 model = Sequential()
 model.add(keras.Input(shape=x.shape[1]))
@@ -90,14 +93,19 @@ model.add(Dense(y.shape[1], activation="sigmoid"))
 
 model.summary()
 
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-opt = keras.optimizers.RMSprop(learning_rate=0.001, centered=True)
+def caca(y_real, y_predicted):
+    pass
 
-history = model.fit(x_train, y_train, epochs=10, batch_size=128)
+opt = keras.optimizers.Adam(learning_rate=0.001)
+model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+
+history = model.fit(x_train, y_train, validation_data=(x_validation, y_validation), epochs=50, batch_size=128, verbose=2)
 
 plot_loss_acc(history)
+plt.show()
 
 res = model.predict(x_test)
+
 '''
 
 def variable_threshold(input, output):
@@ -143,3 +151,4 @@ print(df_x_test.head())
 df_x_test.to_csv("y_test.csv", index=False)
 
 # print(f"Accuracy : {accuracy}")
+'''
