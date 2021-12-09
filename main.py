@@ -58,6 +58,13 @@ def plot_loss_acc(history):
     plt.legend()
 
 
+def threshold_decision(input, threshold):
+    output = numpy.empty(shape=(input.shape[0], 248), dtype="uint8")
+    for i, x in np.ndenumerate(input):
+        output[i[0], i[1]] = 0 if x < threshold else 1
+    return output
+
+
 csv_x_train_url = "train_X.csv"
 csv_y_train_url = "train_Y.csv"
 csv_x_test_url = "test_X.csv"
@@ -66,11 +73,11 @@ df_x_train = pd.read_csv(csv_x_train_url).drop("ChallengeID", axis=1)
 df_y_train = pd.read_csv(csv_y_train_url).drop("ChallengeID", axis=1)
 
 #df_x_test = pd.read_csv(csv_x_test_url)
-df_x_test = pd.read_csv(csv_x_test_url).drop("ChallengeID", axis=1)
+df_x_test = pd.read_csv(csv_x_test_url)
 
 x = df_x_train.to_numpy()
 y = df_y_train.to_numpy()
-x_test = df_x_test.to_numpy()
+x_test = df_x_test.to_numpy()[:, 1:]
 
 x_train, x_validation, y_train, y_validation = train_test_split(x, y, test_size=0.20)
 
@@ -93,10 +100,7 @@ model.add(Dense(y.shape[1], activation="sigmoid"))
 
 model.summary()
 
-def caca(y_real, y_predicted):
-    pass
-
-opt = keras.optimizers.Adam(learning_rate=0.001)
+opt = keras.optimizers.Adam(learning_rate=0.0001)
 model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
 history = model.fit(x_train, y_train, validation_data=(x_validation, y_validation), epochs=50, batch_size=128, verbose=2)
@@ -104,51 +108,16 @@ history = model.fit(x_train, y_train, validation_data=(x_validation, y_validatio
 plot_loss_acc(history)
 plt.show()
 
-res = model.predict(x_test)
+predicted_values_validation = model.predict(x_validation)
+fscore = f1_score(y_validation, threshold_decision(predicted_values_validation, 0.5), average='weighted')
+print(f"F1 Score : {fscore}")
 
 '''
-
-def variable_threshold(input, output):
-    threshold_tab = numpy.empty(248)
-    threshold_tab[:] = 0.5
-
-    for n in range(output.shape[0]):
-        for col in range(output.shape[1]):
-            if (input[n, col] > threshold_tab[col] and output[n, col] == 0) or \
-                    (input[n, col] <= threshold_tab[col] and output[n, col] == 1):
-                threshold_tab[col] = (threshold_tab[col]*(n+1) + input[n, col])/(n+2)
-    return threshold_tab
-
-def threshold_decision(input, v_threshold):
-    input = input[:,:248]
-    output = numpy.empty(shape=(input.shape[0], 248), dtype="uint8")
-    for i, x in np.ndenumerate(input):
-        output[i[0], i[1]] = 0 if x < v_threshold[i[1]] else 1
-    return output
-
-#threshold_decision = np.vectorize(lambda t : (lambda x : 0 if x < t[i] else 1 for i in range(t.shape[0])))
-
-decision_mat = threshold_decision(x_test[:,1:], variable_threshold(x_train, y_train))
-# x_test[:,1:249] = decision_mat[:,:]
-
-print(decision_mat)
-
-# decision_mat = threshold_decision(x_test[0:, 1:], variable_threshold(x_train, y_train))
-# accuracy = accuracy_score(decision_mat, y_validation, normalize=False)
-
-# FOUTRE DANS LE CSVVVVV
-
-print(df_x_test.head())
-
+res = model.predict(x_test)
+decision_mat = threshold_decision(res, 0.5)
 df_x_test = df_x_test.iloc[0:,:249]
-
 df_x_test = df_x_test.astype(dtype='int32')
 df_x_test.iloc[0:, 1:] = decision_mat
-print(df_x_test.dtypes)
-
-print(df_x_test.head())
 
 df_x_test.to_csv("y_test.csv", index=False)
-
-# print(f"Accuracy : {accuracy}")
 '''
