@@ -100,10 +100,10 @@ model.add(Dense(y.shape[1], activation="sigmoid"))
 
 model.summary()
 
-opt = keras.optimizers.Adam(learning_rate=0.0001)
+opt = keras.optimizers.Adam(learning_rate=0.00005)
 model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
-history = model.fit(x_train, y_train, validation_data=(x_validation, y_validation), epochs=50, batch_size=128, verbose=2)
+history = model.fit(x_train, y_train, validation_data=(x_validation, y_validation), epochs=100, batch_size=128, verbose=2)
 
 plot_loss_acc(history)
 plt.show()
@@ -112,7 +112,7 @@ predicted_values_validation = model.predict(x_validation)
 fscore = f1_score(y_validation, threshold_decision(predicted_values_validation, 0.5), average='weighted')
 print(f"F1 Score : {fscore}")
 
-'''
+
 res = model.predict(x_test)
 decision_mat = threshold_decision(res, 0.5)
 df_x_test = df_x_test.iloc[0:,:249]
@@ -120,4 +120,3 @@ df_x_test = df_x_test.astype(dtype='int32')
 df_x_test.iloc[0:, 1:] = decision_mat
 
 df_x_test.to_csv("y_test.csv", index=False)
-'''
